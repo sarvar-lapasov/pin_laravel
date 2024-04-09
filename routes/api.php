@@ -25,7 +25,7 @@ Route::group([
     Route::post('/refresh', [AuthController::class, 'refresh']);
     Route::get('/user', [AuthController::class, 'userProfile']);    
 });
-
+Route::post('/products/{product}',[ProductController::class, 'restore']);
 Route::apiResources([
     'products' => ProductController::class,
  ]);

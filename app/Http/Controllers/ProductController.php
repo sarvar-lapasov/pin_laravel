@@ -6,17 +6,19 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Services\ProductService;
+use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    public function __construct() {
+    public function __construct(private ProductService $productService) {
         $this->middleware('auth:api', ['except' => ['index', 'show']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::available()->latest()->paginate(6);
-       return ProductResource::collection($products);
+        $products = $this->productService->getProducts($request);
+        return ProductResource::collection($products);
     }
 
     public function store(StoreProductRequest $request)
@@ -40,11 +42,17 @@ class ProductController extends Controller
         return $this->success('product updated', $product);
     }
 
-    public function destroy(Product $product)
+    public function destroy($id)
     {
-        $product->delete();
+        $product = $this->productService->deleteProduct($id);
 
         return $this->success('product deleted', $product);
     }
     
+    public function restore($id)
+    {
+        $product = Product::withTrashed()->find($id);
+        $product->restore();
+        return $this->success('product restored', $product);
+    }
 }
